@@ -1,6 +1,6 @@
 # Hands on Vision Language Models/APIs
 
-See nbs/vlm-apis for basic usage
+See nbs/vlm-apis for basic usage.  
 I've created this repo to quickly get started with closed source and open source VLM APIs and compare their accuraces on benchmark datasets
 
 - [ ] Create Base Class
