@@ -1,0 +1,5 @@
+-r requirements/core.txt
+-r src/vlm/apis/gpt_4o_mini/requirements.txt
+-r src/vlm/apis/gemini/requirements.txt
+-r src/vlm/models/florence2/requirements.txt
+-r src/vlm/models/qwen2/requirements.txt

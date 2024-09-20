@@ -9,11 +9,7 @@ class GPT4oMini(VLM):
         self.client = OpenAI(api_key=token)
 
     def __call__(self, image, prompt, *, image_size=None, **kwargs):
-        img_b64_str = self.path_2_b64(image, image_size)
-        image_type = f'image/{P(image).extn}'
-        if in_debug_mode():
-            print(image_type)
-            return
+        img_b64_str, image_type = self.path_2_b64(image, image_size)
         response = self.client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
@@ -23,7 +19,7 @@ class GPT4oMini(VLM):
                         {"type": "text", "text": prompt},
                         {
                             "type": "image_url",
-                            "image_url": {"url": f"data:image/jpeg;base64,{img_b64_str}"},
+                            "image_url": {"url": f"data:image/{image_type};base64,{img_b64_str}"},
                         },
                     ],
                 }

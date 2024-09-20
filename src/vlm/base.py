@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from torch_snippets import read, resize, Info, in_debug_mode, show
+from torch_snippets import read, resize, Info, in_debug_mode, show, P
 from torch_snippets.adapters import np_2_b64
 
 class VLM(ABC):
@@ -12,6 +12,10 @@ class VLM(ABC):
         pass
 
     def path_2_b64(self, path, image_size=None):
+        image_type = f'image/{P(path).extn}'
+        if in_debug_mode():
+            print(image_type)
+            return
         image = read(path)
         if image_size:
             if isinstance(image_size, int):
@@ -20,4 +24,4 @@ class VLM(ABC):
         if in_debug_mode():
             Info(f'{image.shape=}')
             show(image)
-        return np_2_b64(image)
+        return np_2_b64(image), image_type

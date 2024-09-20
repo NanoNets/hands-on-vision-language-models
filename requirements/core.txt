@@ -1,0 +1,2 @@
+torch-snippets[torch]
+python-dotenv
