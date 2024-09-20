@@ -16,7 +16,6 @@ class Florence2(VLM):
         prompt = "<OD>"
         image = readPIL(image)
         inputs = self.processor(text=prompt, images=image, return_tensors="pt").to(self.device, self.torch_dtype)
-        print(inputs)
         generated_ids = self.model.generate(
             input_ids=inputs["input_ids"],
             pixel_values=inputs["pixel_values"],
