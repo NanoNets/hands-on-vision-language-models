@@ -12,10 +12,9 @@ class Florence2(VLM):
         self.model = AutoModelForCausalLM.from_pretrained(model_id, trust_remote_code=True).to(self.device).half()
         self.processor = AutoProcessor.from_pretrained(model_id, trust_remote_code=True)
 
-    def __call__(self, image, prompt):
-        prompt = "<OD>"
+    def __call__(self, image, task):
         image = readPIL(image)
-        inputs = self.processor(text=prompt, images=image, return_tensors="pt").to(self.device, self.torch_dtype)
+        inputs = self.processor(text=task, images=image, return_tensors="pt").to(self.device, self.torch_dtype)
         generated_ids = self.model.generate(
             input_ids=inputs["input_ids"],
             pixel_values=inputs["pixel_values"],
@@ -24,5 +23,5 @@ class Florence2(VLM):
             do_sample=False
         )
         generated_text = self.processor.batch_decode(generated_ids, skip_special_tokens=False)[0]
-        parsed_answer = self.processor.post_process_generation(generated_text, task="<OD>", image_size=(image.width, image.height))
+        parsed_answer = self.processor.post_process_generation(generated_text, task=task, image_size=(image.width, image.height))
         return AD(parsed_answer)
