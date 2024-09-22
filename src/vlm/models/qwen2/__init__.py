@@ -1,11 +1,10 @@
 from torch_snippets.torch_loader import torch
-from transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor
-from qwen_vl_utils import process_vision_info
 
 from vlm.base import VLM
 
 class Qwen2(VLM):
     def __init__(self, _=None):
+        from transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor
         # default: Load the model on the available device(s)
         self.model = Qwen2VLForConditionalGeneration.from_pretrained(
             "Qwen/Qwen2-VL-2B-Instruct", torch_dtype="auto", device_map="auto"
@@ -28,6 +27,7 @@ class Qwen2(VLM):
         self.processor = AutoProcessor.from_pretrained("Qwen/Qwen2-VL-2B-Instruct", min_pixels=min_pixels, max_pixels=max_pixels)
 
     def __call__(self, image, prompt):
+        from qwen_vl_utils import process_vision_info
         img_b64_str, image_type = self.path_2_b64(image)
         messages = [
             {
@@ -65,4 +65,4 @@ class Qwen2(VLM):
         output_text = self.processor.batch_decode(
             generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
         )
-        return output_text
+        return output_text[0]

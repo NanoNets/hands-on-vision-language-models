@@ -1,4 +1,3 @@
-from transformers import AutoProcessor, AutoModelForCausalLM
 from torch_snippets import readPIL, AD
 from torch_snippets.torch_loader import torch
 
@@ -6,6 +5,7 @@ from vlm.base import VLM
 
 class Florence2(VLM):
     def __init__(self, _=None):
+        from transformers import AutoProcessor, AutoModelForCausalLM
         model_id = 'microsoft/Florence-2-large'
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32

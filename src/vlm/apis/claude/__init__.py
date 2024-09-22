@@ -1,10 +1,9 @@
 import os
-import anthropic
-
 from vlm.base import VLM
 
 class Claude_35(VLM):
     def __init__(self, token=None):
+        import anthropic
         self.client = anthropic.Anthropic(api_key=token or os.environ['CLAUDE_API_KEY'])
 
     def __call__(self, image, prompt, max_tokens=1024, image_data=None):
