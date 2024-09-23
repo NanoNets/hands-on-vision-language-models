@@ -3,7 +3,8 @@ from torch_snippets.torch_loader import torch
 from vlm.base import VLM
 
 class Qwen2(VLM):
-    def __init__(self, _=None):
+    def __init__(self):
+        super().__init__()
         from transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor
         # default: Load the model on the available device(s)
         self.model = Qwen2VLForConditionalGeneration.from_pretrained(
@@ -26,7 +27,7 @@ class Qwen2(VLM):
         max_pixels = 1280*28*28
         self.processor = AutoProcessor.from_pretrained("Qwen/Qwen2-VL-2B-Instruct", min_pixels=min_pixels, max_pixels=max_pixels)
 
-    def __call__(self, image, prompt):
+    def predict(self, image, prompt, max_new_tokens=1024):
         from qwen_vl_utils import process_vision_info
         img_b64_str, image_type = self.path_2_b64(image)
         messages = [
@@ -58,7 +59,7 @@ class Qwen2(VLM):
         inputs = inputs.to("cuda")
 
         # Inference: Generation of the output
-        generated_ids = self.model.generate(**inputs, max_new_tokens=128)
+        generated_ids = self.model.generate(**inputs, max_new_tokens=max_new_tokens)
         generated_ids_trimmed = [
             out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
         ]

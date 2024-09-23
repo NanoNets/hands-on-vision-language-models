@@ -4,7 +4,8 @@ from torch_snippets.torch_loader import torch
 from vlm.base import VLM
 
 class Florence2(VLM):
-    def __init__(self, _=None):
+    def __init__(self):
+        super().__init__()
         from transformers import AutoProcessor, AutoModelForCausalLM
         model_id = 'microsoft/Florence-2-large'
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -12,7 +13,7 @@ class Florence2(VLM):
         self.model = AutoModelForCausalLM.from_pretrained(model_id, trust_remote_code=True).to(self.device).half()
         self.processor = AutoProcessor.from_pretrained(model_id, trust_remote_code=True)
 
-    def __call__(self, image, task):
+    def predict(self, image, task):
         image = readPIL(image)
         inputs = self.processor(text=task, images=image, return_tensors="pt").to(self.device, self.torch_dtype)
         generated_ids = self.model.generate(
