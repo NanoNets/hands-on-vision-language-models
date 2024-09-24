@@ -1,13 +1,13 @@
-import json
+import duckdb, json
 from torch_snippets import *
+from datasets import load_dataset
 
 from vlm.data.base import main
 from vlm.cli import cli
 
+from vlm.evaluation.exact_match import ExactMatch
 
 def load_sroie():
-    from datasets import load_dataset
-
     ds = load_dataset("sizhkhy/SROIE", split="test")
     fields = ds[0]["fields"].keys()
     return ds, fields
@@ -23,31 +23,45 @@ def predict_sroie(vlm: str, n: int = None):
 
 
 @cli.command()
-def evaluate_sroie(db: P):
-    """db is the folder where the predictions were saved"""
+def evaluate_sroie(vlm: str, db: P=None):
+    db = ifnone(db, os.environ['DUCKDB'])
+    with duckdb.connect(db) as con:
+        q = f"SELECT dataset_row_index, prediction_value, error_string FROM predictions where dataset_name = 'SROIE' and vlm_name = '{vlm}'"
+        df = con.execute(q).fetchdf()
+        df = df[~df['prediction_value'].isna()]
+        df = df[df['prediction_value'] != None]
+    
     metrics = AD()
     ds, fields = load_sroie()
 
     import evaluate
+    from evaluate.module import Metric
 
     for f in fields:
-        metrics[f] = evaluate.load("exact_match")
+        metrics[f] = ExactMatch()
 
-    for ix, file in E(track2(db.ls())):
-        pred = read_json(file)
-        pred = {k.upper(): v for k, v in pred.items()}
-        truth = ds[int(file.stem)]["fields"]
+    for _, (_, row) in E(track2(df.iterrows(), total=len(df))):
+        row = row.squeeze()
+        pred = process_raw(row.prediction_value)
+        err = row.error_string
+        ix = row.dataset_row_index
+        truth = ds[ix]["fields"]
         for f in fields:
-            m = metrics[f]
+            m: Metric = metrics[f]
             _pred = str(pred[f]).replace("\n", " ")
             _truth = str(truth[f])
             m.add_batch(predictions=[_pred], references=[_truth])
     aggregate = AD()
-    for m in metrics:
-        aggregate[m] = float(
-            metrics[m].compute(ignore_case=True, ignore_punctuation=True)["exact_match"]
-        )
-    return aggregate
+    cache = AD()
+    for _m in metrics:
+        m: Metric = metrics[_m]
+        m._finalize()
+        _cache = m.data
+        _aggregate = _agg = m.compute(ignore_case=True, ignore_punctuation=True)
+        aggregate[_m] = float(_agg['exact_match'])
+        cache[_m] = _cache.add_column('scores', _agg['score_list']).to_pandas()
+
+    return AD(aggregate=aggregate, cache=cache)
 
 
 if __name__ == "__main__":

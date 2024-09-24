@@ -1,4 +1,4 @@
-import os
+import os, json
 from vlm.base import VLM
 
 class Claude_35(VLM):
@@ -19,4 +19,10 @@ class Claude_35(VLM):
                 ])
             ]
         )
-        return message
+        return message.to_json()
+
+    @staticmethod
+    def get_raw_output(pred):
+        pred = json.loads(pred)
+        pred = pred['content'][0]['text']
+        return pred

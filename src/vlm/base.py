@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
 
-import os, time, json, duckdb
+from hashlib import sha256
+import os, time, traceback, json
+
+import duckdb
 from torch_snippets import read, resize, Info, in_debug_mode, show, P, PIL, np, Warn, ifnone
 from torch_snippets.adapters import np_2_b64
 
-from hashlib import sha256
 
 def to_numpy(image):
     if isinstance(image, (P, str)):
@@ -48,7 +50,7 @@ class VLM(ABC):
         ''')
 
     @abstractmethod
-    def __call__(self, image, prompt, **kwargs):
+    def predict(self, image, prompt, **kwargs):
         pass
 
     def path_2_b64(self, path, image_size=None):
@@ -78,12 +80,13 @@ class VLM(ABC):
         dict_hash = hash_dict(kwargs)
         inputs_hash = f'{img_hash}__{prompt_hash}__{dict_hash}'
         with self.con.cursor() as c:
-            c.execute(f"SELECT prediction_value FROM Predictions WHERE inputs_hash='{inputs_hash}' and vlm_name='{self.__class__.__name__}'")
+            c.execute(f"SELECT prediction_value, error_string FROM Predictions WHERE inputs_hash='{inputs_hash}' and vlm_name='{self.__class__.__name__}'")
             row = c.fetchone()
             if row:
                 Info(f'Cache hit for given inputs')
-                return row[0], inputs_hash
-        return None, inputs_hash
+                output, error = row
+                return (output, error), inputs_hash
+        return (None, None), inputs_hash
 
     def make_prediction(self, image, prompt, **kwargs):
         try:
@@ -91,15 +94,16 @@ class VLM(ABC):
             error = None
         except Exception as e:
             output = None
-            error = f'{e}\n{e.__traceback__}'
+            _tb = traceback.format_exc()
+            error = f'{e}\n{_tb}'
             Warn(f'Error: {error}')
         return output, error
 
     def __call__(self, image, prompt, dataset_name=None, dataset_row_id=None, overwrite_cache=False, **kwargs):
-        cache, inputs_hash = self.fetch_cache_if_exists(image, prompt, **kwargs)
-        if not overwrite_cache and cache:
+        (output, error), inputs_hash = self.fetch_cache_if_exists(image, prompt, **kwargs)
+        if output and (not overwrite_cache):
             Info(f'Returning from cache')
-            return cache
+            return output
         start = time.time()
         output, error = self.make_prediction(image, prompt, **kwargs)
         end = time.time()

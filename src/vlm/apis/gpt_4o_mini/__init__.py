@@ -1,4 +1,4 @@
-import os
+import os, json
 from torch_snippets import P, in_debug_mode
 
 from vlm.base import VLM
@@ -26,4 +26,14 @@ class GPT4oMini(VLM):
                 }
             ],
         )
-        return response.choices[0].message.content
+        # used to be response.choices[0].message.content
+        return response.to_json()
+
+    @staticmethod
+    def get_raw_output(pred):
+        pred = json.loads(pred)
+        pred = pred['choices'][0]['message']['content']
+        return pred
+
+
+    

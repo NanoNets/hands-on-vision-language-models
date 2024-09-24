@@ -12,12 +12,12 @@ class Qwen2(VLM):
         )
 
         # We recommend enabling flash_attention_2 for better acceleration and memory saving, especially in multi-image and video scenarios.
-        model = Qwen2VLForConditionalGeneration.from_pretrained(
-            "Qwen/Qwen2-VL-2B-Instruct",
-            torch_dtype=torch.bfloat16,
-            attn_implementation="flash_attention_2",
-            device_map="auto",
-        )
+        # self.model = Qwen2VLForConditionalGeneration.from_pretrained(
+        #     "Qwen/Qwen2-VL-2B-Instruct",
+        #     torch_dtype=torch.bfloat16,
+        #     attn_implementation="flash_attention_2",
+        #     device_map="auto",
+        # )
 
         # default processer
         # self.processor = AutoProcessor.from_pretrained("Qwen/Qwen2-VL-2B-Instruct")
@@ -67,3 +67,7 @@ class Qwen2(VLM):
             generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
         )
         return output_text[0]
+
+    @staticmethod
+    def get_raw_output(pred):
+        return pred
