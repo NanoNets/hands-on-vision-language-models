@@ -1,6 +1,7 @@
 # test.py
 from PIL import Image
 from torch_snippets.torch_loader import torch
+from torch_snippets import P, PIL
 
 
 from vlm.base import VLM
@@ -16,7 +17,9 @@ class MiniCPM(VLM):
         self.tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
 
     def predict(self, image, prompt):
-        image = Image.open(image).convert('RGB')
+        if isinstance(image, (P, str)):
+            image = Image.open(image).convert('RGB')
+        assert isinstance(image, PIL.Image.Image)
         msgs = [{'role': 'user', 'content': [image, prompt]}]
         res = self.model.chat(
             image=None,
@@ -24,3 +27,7 @@ class MiniCPM(VLM):
             tokenizer=self.tokenizer
         )
         return res
+
+    @staticmethod
+    def get_raw_output(pred):
+        return pred

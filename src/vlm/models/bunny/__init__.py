@@ -1,17 +1,20 @@
 from torch_snippets.torch_loader import torch
-import transformers, warnings
-from PIL import Image
+from torch_snippets import PIL, P, Image
 
 from vlm.base import VLM
 
-transformers.logging.set_verbosity_error()
-transformers.logging.disable_progress_bar()
-warnings.filterwarnings('ignore')
+
 
 class Bunny(VLM):
     def __init__(self):
         super().__init__()
+        import transformers, warnings
         from transformers import AutoModelForCausalLM, AutoTokenizer
+        
+        transformers.logging.set_verbosity_error()
+        transformers.logging.disable_progress_bar()
+        warnings.filterwarnings('ignore')
+
         self.device = 'cuda'  # or cpu
         torch.set_default_device(self.device)
 
@@ -33,7 +36,9 @@ class Bunny(VLM):
         input_ids = torch.tensor(text_chunks[0] + [-200] + text_chunks[1][1:], dtype=torch.long).unsqueeze(0).to(self.device)
 
         # image, sample images can be found in images folder
-        image = Image.open(image)
+        if isinstance(image, (str,P)):
+            image = Image.open(image)
+        assert isinstance(image, PIL.Image.Image)
         image_tensor = self.model.process_images([image], self.model.config).to(dtype=self.model.dtype, device=self.device)
 
         # generate

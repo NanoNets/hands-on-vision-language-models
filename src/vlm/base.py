@@ -126,7 +126,8 @@ class VLM(ABC):
             )
             if overwrite_cache:
                 Info(f'Overwriting cache for given inputs')
-                c.execute(f"DELETE FROM Predictions WHERE inputs_hash='{inputs_hash}'")
+                c.execute(f"DELETE FROM Predictions WHERE inputs_hash='{inputs_hash}' and vlm_name='{self.__class__.__name__}'")
+                Info(f'Deleted {c.rowcount}')
             c.execute(
                 _insert, 
                 (

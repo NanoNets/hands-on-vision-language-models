@@ -1,2 +1,6 @@
-torch-snippets[torch]
+torch-snippets[torch,pdf]
+altair
 python-dotenv
+duckdb
+datasets
+evaluate

@@ -2,9 +2,9 @@ import duckdb, json
 from torch_snippets import *
 from datasets import load_dataset
 
-from vlm.data.base import main
 from vlm.cli import cli
-
+from vlm.available_vlms import VLMs
+from vlm.data.base import main, process_raw
 from vlm.evaluation.exact_match import ExactMatch
 
 def load_sroie():
@@ -26,7 +26,7 @@ def predict_sroie(vlm: str, n: int = None):
 def evaluate_sroie(vlm: str, db: P=None):
     db = ifnone(db, os.environ['DUCKDB'])
     with duckdb.connect(db) as con:
-        q = f"SELECT dataset_row_index, prediction_value, error_string FROM predictions where dataset_name = 'SROIE' and vlm_name = '{vlm}'"
+        q = f"SELECT dataset_row_index, prediction_value, error_string, vlm_name FROM predictions where dataset_name = 'SROIE' and vlm_name = '{vlm}'"
         df = con.execute(q).fetchdf()
         df = df[~df['prediction_value'].isna()]
         df = df[df['prediction_value'] != None]
@@ -42,13 +42,14 @@ def evaluate_sroie(vlm: str, db: P=None):
 
     for _, (_, row) in E(track2(df.iterrows(), total=len(df))):
         row = row.squeeze()
-        pred = process_raw(row.prediction_value)
+        pred = AD(process_raw(VLMs[row.vlm_name].get_raw_output(row.prediction_value)))
+        pred = AD({k.upper(): v for k, v in pred.items()})
         err = row.error_string
         ix = row.dataset_row_index
         truth = ds[ix]["fields"]
         for f in fields:
             m: Metric = metrics[f]
-            _pred = str(pred[f]).replace("\n", " ")
+            _pred = str(pred.get(f, '')).replace("\n", " ")
             _truth = str(truth[f])
             m.add_batch(predictions=[_pred], references=[_truth])
     aggregate = AD()

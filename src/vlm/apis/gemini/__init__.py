@@ -20,6 +20,9 @@ class Gemini(VLM):
 
     @staticmethod
     def get_raw_output(pred):
-        pred = json.loads(pred)
-        pred = pred['candidates'][0]['content']['parts'][0]['text']
-        return pred
+        try:
+            pred = json.loads(pred)
+            pred = pred['candidates'][0]['content']['parts'][0]['text']
+            return pred
+        except:
+            return ''
