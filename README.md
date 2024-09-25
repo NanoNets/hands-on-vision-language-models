@@ -26,7 +26,7 @@ prompt = 'what is in the picture'
 prediction = qwen(image, prompt)
 ```
 
-Predictions are cached internally in `db/predictions.py` and all the VLMs will avoid redundant API/Model calls on same inputs
+Predictions are cached internally in `db/predictions.db` and all the VLMs will avoid redundant API/Model calls on same inputs
 
 ```python
 with duckdb.connect('db/predictions.db') as con:
