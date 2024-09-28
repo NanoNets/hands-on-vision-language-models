@@ -1,10 +1,6 @@
 from abc import ABC, abstractmethod
-
-from hashlib import sha256
-import os, time, traceback, json
-
-import duckdb
-from torch_snippets import read, resize, Info, in_debug_mode, show, P, PIL, np, Warn, ifnone
+import os, duckdb
+from torch_snippets import read, resize, Info, in_debug_mode, show, P
 from torch_snippets.adapters import np_2_b64
 
 
@@ -42,7 +38,7 @@ class VLM(ABC):
             kwargs TEXT,
             vlm_name TEXT,
             dataset_name TEXT,
-            dataset_row_index INTEGER,
+            item_name TEXT,
             prediction_value TEXT,
             prediction_duration DECIMAL(6, 3),
             error_string TEXT
@@ -99,7 +95,7 @@ class VLM(ABC):
             Warn(f'Error: {error}')
         return output, error
 
-    def __call__(self, image, prompt, dataset_name=None, dataset_row_id=None, overwrite_cache=False, **kwargs):
+    def __call__(self, image, prompt, dataset_name:str, item_name:str, overwrite_cache=False, **kwargs):
         (output, error), inputs_hash = self.fetch_cache_if_exists(image, prompt, **kwargs)
         if output and (not overwrite_cache):
             Info(f'Returning from cache')
@@ -108,19 +104,19 @@ class VLM(ABC):
         output, error = self.make_prediction(image, prompt, **kwargs)
         end = time.time()
         _time = float(f'{end-start:.3f}')
-        self.save_prediction(inputs_hash, prompt, kwargs, _time, output, error, dataset_name, dataset_row_id, overwrite_cache)
+        self.save_prediction(inputs_hash, prompt, kwargs, _time, output, error, dataset_name, item_name, overwrite_cache)
         return output
     
-    def save_prediction(self, inputs_hash, prompt, kwargs, _time, output, error, dataset_name=None, dataset_row_id=None, overwrite_cache=False):
+    def save_prediction(self, inputs_hash, prompt, kwargs, _time, output, error, dataset_name=None, item_name=None, overwrite_cache=False):
         with self.con.cursor() as c:
-            if dataset_name is None or dataset_row_id is None:
-                Warn("Calling VLM works best with `dataset_name` and `dataset_row_id`")
+            if dataset_name is None or item_name is None:
+                Warn("Calling VLM works best with `dataset_name` and `item_name`")
             
             kwargs = json.dumps(kwargs, sort_keys=True)
 
             _insert = (
                 "INSERT INTO Predictions (inputs_hash, prompt, kwargs, vlm_name, "
-                "dataset_name, dataset_row_index, prediction_value, "
+                "dataset_name, item_name, prediction_value, "
                 "prediction_duration, error_string) "
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
             )
@@ -133,7 +129,7 @@ class VLM(ABC):
                 (
                     inputs_hash, prompt, kwargs, 
                     self.__class__.__name__, 
-                    dataset_name, dataset_row_id, 
+                    dataset_name, item_name, 
                     output, _time, error))
         return output
 
