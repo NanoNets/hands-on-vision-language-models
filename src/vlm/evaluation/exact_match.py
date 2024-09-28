@@ -20,11 +20,12 @@ import numpy as np
 
 import evaluate
 
+
 class ExactMatch(evaluate.Metric):
     def _info(self):
         return evaluate.MetricInfo(
-            description='',
-            citation='',
+            description="",
+            citation="",
             features=datasets.Features(
                 {
                     "predictions": datasets.Value("string", id="sequence"),
