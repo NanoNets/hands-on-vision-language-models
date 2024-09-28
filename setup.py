@@ -6,10 +6,7 @@ setup(
     packages=find_packages("src/"),
     package_dir={"": "src"},
     install_requires=[
-        "numpy",
-        "torch",
-        "transformers",
-        "opencv-python",
+        "torch-snippets",
     ],
     entry_points={
         "console_scripts": [

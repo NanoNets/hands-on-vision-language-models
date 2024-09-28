@@ -12,6 +12,7 @@ VLMs = {
         Florence2,
         Qwen2_2B,
         Qwen2_7B,
+        Qwen2_Custom,
         MiniCPM,
         Bunny,
         Llama_32_11B,

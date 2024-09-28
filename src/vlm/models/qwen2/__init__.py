@@ -1,21 +1,26 @@
-from torch_snippets.torch_loader import torch
+from torch_snippets import ifnone
 
 from vlm.base import VLM
 
 
 class Qwen2_base(VLM):
-    def __init__(self, model):
+    def __init__(self, model, name=None, adapter=None):
         super().__init__()
         from transformers import (
             Qwen2VLForConditionalGeneration,
             AutoTokenizer,
             AutoProcessor,
         )
+        if name is None and 'Custom' in self.__class__.__name__:
+            raise ValueError("Custom Models need a name as argument for DB caching")
+        self.name = ifnone(name, self.__class__.__name__)
 
         # default: Load the model on the available device(s)
         self.model = Qwen2VLForConditionalGeneration.from_pretrained(
             model, torch_dtype="auto", device_map="auto"
         )
+        if adapter is not None:
+            self.model.load_adapter(adapter)
 
         min_pixels = 256 * 28 * 28
         max_pixels = 1280 * 28 * 28
@@ -80,3 +85,8 @@ class Qwen2_2B(Qwen2_base):
 class Qwen2_7B(Qwen2_base):
     def __init__(self):
         super().__init__("Qwen/Qwen2-VL-7B-Instruct")
+
+
+class Qwen2_Custom(Qwen2_base): # /home/paperspace/Code/hands-on-vision-language-models/LLaMA-Factory/saves/cord/qwen2_vl-2b/lora/sft
+    def __init__(self, model, name, adapter):
+        super().__init__(model, name, adapter)

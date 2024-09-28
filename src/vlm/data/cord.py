@@ -137,6 +137,37 @@ def evaluate_table(truth, pred):
     return AD(fscore=fscore, precision=precision, recall=recall)
 
 
+def make_message(im, item):
+    content = json.dumps(load_gt(item).d)
+    message = {
+        "messages": [
+          {
+            "content": f"{prompt}<image>",
+            "role": "user"
+          },
+          {
+            "content": content,
+            "role": "assistant"
+          }
+        ],
+        "images": [im]
+    }
+    return message
+
+def make_cord_messages(cord, save_to):
+    messages = []
+    image_root = f'{parent(save_to)}/{stem(save_to)}-images/'
+    for ix, item in E(track2(cord)):
+        im = item['image']
+        to = f'{image_root}/{ix}.jpeg'
+        if not exists(to):
+            makedir(parent(to))
+            im.save(to)
+        message = make_message(im, item)
+        messages.append(message)
+    return write_json(messages, save_to)
+
+
     
 
 

@@ -85,8 +85,9 @@ class VLM(ABC):
         dict_hash = hash_dict(kwargs)
         inputs_hash = f"{img_hash}__{prompt_hash}__{dict_hash}"
         with self.con.cursor() as c:
+            _vlm_name = getattr(self, 'name', self.__class__.__name__)
             c.execute(
-                f"SELECT prediction_value, error_string FROM Predictions WHERE inputs_hash='{inputs_hash}' and vlm_name='{self.__class__.__name__}'"
+                f"SELECT prediction_value, error_string FROM Predictions WHERE inputs_hash='{inputs_hash}' and vlm_name='{_vlm_name}'"
             )
             row = c.fetchone()
             if row:
@@ -162,10 +163,11 @@ class VLM(ABC):
                 "prediction_duration, error_string) "
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
             )
+            _vlm_name = getattr(self, 'name', self.__class__.__name__)
             if overwrite_cache:
                 Info(f"Overwriting cache for given inputs")
                 c.execute(
-                    f"DELETE FROM Predictions WHERE inputs_hash='{inputs_hash}' and vlm_name='{self.__class__.__name__}'"
+                    f"DELETE FROM Predictions WHERE inputs_hash='{inputs_hash}' and vlm_name='{_vlm_name}'"
                 )
                 Info(f"Deleted {c.rowcount}")
             c.execute(
@@ -174,7 +176,7 @@ class VLM(ABC):
                     inputs_hash,
                     prompt,
                     kwargs,
-                    self.__class__.__name__,
+                    _vlm_name,
                     dataset_name,
                     item_name,
                     output,
