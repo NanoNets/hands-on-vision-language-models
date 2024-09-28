@@ -66,8 +66,3 @@ class Qwen2_2B(Qwen2_base):
 class Qwen2_7B(Qwen2_base):
     def __init__(self):
         super().__init__("Qwen/Qwen2-VL-7B-Instruct")
-        
-class Qwen_VL(Qwen2_base):
-    def __init__(self):
-        super().__init__("Qwen/Qwen2-VL-7B-Instruct")
-

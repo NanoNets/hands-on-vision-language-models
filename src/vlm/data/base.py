@@ -15,7 +15,7 @@ def main(ds, vlm: str|VLM, prompt, n:int=None, image_key='images', dataset_name=
     for ix,x in E(track2(ds)):
         if _vlm == 'Gemini': time.sleep(10)
         # Use vlm.cursor to fetch the actual predictions
-        vlm(x[image_key], prompt=prompt, dataset_name=dataset_name, dataset_row_id=ix, overwrite_cache=False)
+        vlm(x[image_key], prompt=prompt, dataset_name=dataset_name, item_name=ix, overwrite_cache=False)
         if ix >= n:
             Info(f'Breaking Early as {n=} is set')
             break

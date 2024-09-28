@@ -7,8 +7,8 @@ from vlm.available_vlms import VLMs
 from vlm.data.base import main, process_raw
 from vlm.evaluation.exact_match import ExactMatch
 
-def load_sroie():
-    ds = load_dataset("sizhkhy/SROIE", split="test")
+def load_sroie(split='test'):
+    ds = load_dataset("sizhkhy/SROIE", split=split)
     fields = ds[0]["fields"].keys()
     return ds, fields
 

@@ -8,8 +8,8 @@ from vlm.data.base import main, FieldMatcher, process_raw
 from vlm.evaluation.grits import grits_con
 
 
-def load_cord():
-    ds = load_dataset("naver-clova-ix/cord-v2", split="test")
+def load_cord(split='test'):
+    ds = load_dataset("naver-clova-ix/cord-v2", split=split)
     return ds
 
 
