@@ -34,7 +34,7 @@ with duckdb.connect('db/predictions.db') as con:
     df = con.execute(q).fetchdf()
 print(df.columns)
 # Index(['inputs_hash', 'prompt', 'kwargs', 'vlm_name', 'dataset_name',
-#        'dataset_row_index', 'prediction_value', 'prediction_duration',
+#        'item_name', 'prediction_value', 'prediction_duration',
 #        'error_string'],
 #       dtype='object')
 ```
