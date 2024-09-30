@@ -1,7 +1,18 @@
 from abc import ABC, abstractmethod
 import os, duckdb, json, traceback, time
 from hashlib import sha256
-from torch_snippets import read, resize, Info, in_debug_mode, show, P, np, PIL, Warn
+from torch_snippets import (
+    read,
+    resize,
+    Info,
+    in_debug_mode,
+    show,
+    P,
+    np,
+    PIL,
+    Warn,
+    ifnone,
+)
 from torch_snippets.adapters import np_2_b64
 
 
@@ -32,9 +43,12 @@ def hash_dict(d):
 
 
 class VLM(ABC):
-    def __init__(self, db=None):
+    def __init__(self, *, db=None, name=None):
         self.db = os.environ.get("DUCKDB", db)
         self.init_db()
+        if name is None and "Custom" in self.__class__.__name__:
+            raise ValueError("Custom Models need a name as argument for DB caching")
+        self.name = ifnone(name, self.__class__.__name__)
 
     def init_db(self):
         self.con = duckdb.connect(self.db)
@@ -85,7 +99,7 @@ class VLM(ABC):
         dict_hash = hash_dict(kwargs)
         inputs_hash = f"{img_hash}__{prompt_hash}__{dict_hash}"
         with self.con.cursor() as c:
-            _vlm_name = getattr(self, 'name', self.__class__.__name__)
+            _vlm_name = getattr(self, "name", self.__class__.__name__)
             c.execute(
                 f"SELECT prediction_value, error_string FROM Predictions WHERE inputs_hash='{inputs_hash}' and vlm_name='{_vlm_name}'"
             )
@@ -163,7 +177,7 @@ class VLM(ABC):
                 "prediction_duration, error_string) "
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
             )
-            _vlm_name = getattr(self, 'name', self.__class__.__name__)
+            _vlm_name = getattr(self, "name", self.__class__.__name__)
             if overwrite_cache:
                 Info(f"Overwriting cache for given inputs")
                 c.execute(

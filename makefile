@@ -2,6 +2,11 @@ N ?= 100
 
 predict-Qwen2-cord:
 	vlm predict-cord Qwen2 --n=$(N)
+	
+predict-Qwen2-custom-cord:
+	# vlm predict-cord Qwen2_Custom --n=$(N) --vlm-kwargs='{"model": "Qwen/Qwen2-VL-2B-Instruct", "name": "Qwen-2B-Cord-Finetuned", "adapter": "/home/paperspace/LLaMA-Factory/saves/cord/qwen2_vl-2b/lora/sft"}'
+	# vlm predict-cord Qwen2_Custom --n=$(N) --vlm-kwargs='{"model": "Qwen/Qwen2-VL-2B-Instruct", "name": "Qwen-2B-Cord-v3-Finetuned", "adapter": "/home/paperspace/LLaMA-Factory/saves/cord-3/qwen2_vl-2b/lora/sft"}'
+	vlm predict-cord Qwen2_Custom --n=$(N) --vlm-kwargs='{"model": "Qwen/Qwen2-VL-2B-Instruct", "name": "Qwen-2B-Cord-v4-Finetuned", "adapter": "/home/paperspace/LLaMA-Factory/saves/cord-4/qwen2_vl-2b/lora/sft"}'
 
 predict-Qwen2-sroie:
 	vlm predict-sroie Qwen2 --n=$(N)

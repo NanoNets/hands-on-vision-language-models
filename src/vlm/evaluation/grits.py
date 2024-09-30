@@ -2,6 +2,7 @@
 Copyright (C) 2021 Microsoft Corporation
 fetched from https://github.com/microsoft/table-transformer/blob/main/src/grits.py
 """
+
 import itertools
 from difflib import SequenceMatcher
 import xml.etree.ElementTree as ET

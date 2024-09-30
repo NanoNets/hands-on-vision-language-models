@@ -7,7 +7,8 @@ from vlm.available_vlms import VLMs
 from vlm.data.base import main, process_raw
 from vlm.evaluation.exact_match import ExactMatch
 
-def load_sroie(split='test'):
+
+def load_sroie(split="test"):
     ds = load_dataset("sizhkhy/SROIE", split=split)
     fields = ds[0]["fields"].keys()
     return ds, fields
@@ -23,14 +24,14 @@ def predict_sroie(vlm: str, n: int = None):
 
 
 @cli.command()
-def evaluate_sroie(vlm: str, db: P=None):
-    db = ifnone(db, os.environ['DUCKDB'])
+def evaluate_sroie(vlm: str, db: P = None):
+    db = ifnone(db, os.environ["DUCKDB"])
     with duckdb.connect(db) as con:
         q = f"SELECT dataset_row_index, prediction_value, error_string, vlm_name FROM predictions where dataset_name = 'SROIE' and vlm_name = '{vlm}'"
         df = con.execute(q).fetchdf()
-        df = df[~df['prediction_value'].isna()]
-        df = df[df['prediction_value'] != None]
-    
+        df = df[~df["prediction_value"].isna()]
+        df = df[df["prediction_value"] != None]
+
     metrics = AD()
     ds, fields = load_sroie()
 
@@ -49,7 +50,7 @@ def evaluate_sroie(vlm: str, db: P=None):
         truth = ds[ix]["fields"]
         for f in fields:
             m: Metric = metrics[f]
-            _pred = str(pred.get(f, '')).replace("\n", " ")
+            _pred = str(pred.get(f, "")).replace("\n", " ")
             _truth = str(truth[f])
             m.add_batch(predictions=[_pred], references=[_truth])
     aggregate = AD()
@@ -59,8 +60,8 @@ def evaluate_sroie(vlm: str, db: P=None):
         m._finalize()
         _cache = m.data
         _aggregate = _agg = m.compute(ignore_case=True, ignore_punctuation=True)
-        aggregate[_m] = float(_agg['exact_match'])
-        cache[_m] = _cache.add_column('scores', _agg['score_list']).to_pandas()
+        aggregate[_m] = float(_agg["exact_match"])
+        cache[_m] = _cache.add_column("scores", _agg["score_list"]).to_pandas()
 
     return AD(aggregate=aggregate, cache=cache)
 
