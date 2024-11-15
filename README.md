@@ -19,7 +19,7 @@ available_models()
 ```
 
 ```python
-from vlm.available_models import VLMs
+from vlm.available_vlms import VLMs
 
 print(VLMs) # --> Dictionary of VLM classes
 # you can pick any one of them and use it like so
